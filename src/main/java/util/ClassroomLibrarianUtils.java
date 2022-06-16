@@ -11,4 +11,9 @@ public class ClassroomLibrarianUtils {
     public static String generateId() {
         return RandomStringUtils.randomAlphanumeric(ID_LENGTH);
     }
+
+    public static Boolean validateString(String s) {
+        return true;
+    }
+
 }

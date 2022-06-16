@@ -1,0 +1,66 @@
+@startuml
+title AddBook
+
+actor User
+participant "API Gateway" as APIGateway
+participant Lambda
+participant AddBookActivity
+participant CLUtil
+participant ModelConverter
+participant CatalogDao
+database DynamoDB
+
+User -> APIGateway: GET /book/{bookId}
+activate User
+activate APIGateway
+APIGateway -> Lambda
+activate Lambda
+Lambda -> AddBookActivity: handleRequest(AddBookRequest, Context)
+activate AddBookActivity
+
+AddBookActivity -> CLUtil: validate input
+
+
+alt if invalid input given
+    AddBookActivity <-- CLUtil: false
+    Lambda <-- AddBookActivity: InvalidAttributeException
+    APIGateway <-- Lambda
+    User <-- APIGateway: 400 Response: Bad request
+    else otherwise, continue
+    end
+AddBookActivity -> CLUtil: generateId()
+
+CLUtil -> AddBookActivity
+
+AddBookActivity -> CatalogDao: getBook(bookId)
+CatalogDao -> DynamoDB: getBook(bookId)
+alt if bookId already exists
+    AddBookActivity -> CLUtil: generateId()
+    CLUtil -> AddBookActivity
+    else otherwise, continue
+    end
+
+AddBookActivity -> CatalogDao: addBook(Book)
+activate CatalogDao
+CatalogDao -> DynamoDB: add Book to catalog
+activate DynamoDB
+
+
+
+CatalogDao <-- DynamoDB: Book
+deactivate DynamoDB
+AddBookActivity <-- CatalogDao
+deactivate CatalogDao
+AddBookActivity -> ModelConverter: toBookModel(Book)
+activate ModelConverter
+AddBookActivity <-- ModelConverter: BookModel
+deactivate ModelConverter
+AddBookActivity -> Lambda: AddBookResponse
+deactivate AddBookActivity
+
+APIGateway <-- Lambda
+deactivate Lambda
+User <-- APIGateway: 200 Response
+deactivate APIGateway
+deactivate User
+@enduml
