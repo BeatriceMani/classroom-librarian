@@ -23,6 +23,7 @@ in a school building.
 
 #### Currently in scope:
 * U1 As a student, I can view details for a specific book
+* U8 As an administrator, I can add books to our school catalog
 
 #### Coming soon:
 * U2 As a student, I can browse to see what books are available in my classroom
@@ -31,13 +32,13 @@ in a school building.
 
 
 ### Considerations
-* Implement caching?
+* Implement caching
 
 ## Class Architecture 
 
 [Class Architecture UML Diagram](diagrams/classroom-librarian-class-architecture.puml)
 
-## Data Models
+## Data models
 
 Books
 * `bookId` (String, partition key)
@@ -76,8 +77,14 @@ Requests
 * If an invalid bookId is provided, throws a
 `BookNotFoundException`
 
-[GetBookActivity Sequence Diagram](diagrams/GetBookActivity-SD.puml)
+![GetBookActivity Sequence Diagram](images/GetBookActivity-SD.png)
 
+### AddBookToCatalogActivity
+* Accepts `POST` requests to `/books/`
+* Accepts data to create a new book. Assigned a radom unique bookId.
+* If name is not a valid string, throws an 'InvalidAttributeValueException'
+
+![AddBookActivity Sequence Diagram](images/AddBookActivity-SD.png)
 
 ### ViewAllBooksActivity
 * Accepts `GET` requests to `\books`
